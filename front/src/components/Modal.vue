@@ -48,5 +48,6 @@ export default {
         top: 10px;
         font-size: 20px;
         color: #c4c4c4;
+      cursor: pointer;
     }
 </style>

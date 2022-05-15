@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import axios from "axios"
+import {signUp} from "../services/api"
     export default {
         name: "Registration",
         data() {
@@ -41,7 +41,7 @@ import axios from "axios"
         },
         methods: {
             onSubmit() {
-                axios.post(`http://0.0.0.0:8000/registration/`,{ username: this.form.login, email: this.form.email, password: this.form.password }).then(() => {
+                signUp({ username: this.form.login, email: this.form.email, password: this.form.password }).then(() => {
 					this.$toast.success('Profile saved.', {
                         position: "bottom"
                     })

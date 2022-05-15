@@ -8,7 +8,7 @@
 		</div>
   <div class="page_header">Ваши проекты:</div>
   <div class="projects_list" v-if="boards">
-    <div class="project" v-for="board in boards" :key="board.id" @click="$emit('showProject', board.id)">
+    <div class="project" v-for="board in boards" :key="board.id" @click="$emit('showProject', board)">
       {{board.name}}
     </div>
     <div class="project project_add" @click="showModal">+</div>
@@ -22,36 +22,24 @@
 </template>
 
 <script>
-import axios from "axios";
 import Modal from "./Modal.vue"
+import optionsMixin from '../mixins/optionsMixin'
+import {getBoards, createBoard} from '@/services/api'
 
 export default {
     name: "BoardsList",
-    components: [Modal],
+    components: {Modal},
+    mixins: [optionsMixin],
     data() {
         return {
             boards: [],
             modal: false,
             name: "",
-            user: localStorage.getItem("user_id"),
-            username: localStorage.getItem("username"),
-            options: {
-				headers: {
-					"Authorization": "Token " + localStorage.getItem('token')
-				}
-			},
         };
     },
     methods: {
         getBoards() {
-            axios.get(`http://0.0.0.0:8000/boards/${this.user}/`, this.options).then(res => {
-                this.boards = res.data;
-            }).catch(err => {
-                console.log((err));
-            });
-        },
-        addBoard() {
-            axios.post(`http://0.0.0.0:8000/boards/${this.user}/`, this.options).then(res => {
+            getBoards(this.user, this.options).then(res => {
                 this.boards = res.data;
             }).catch(err => {
                 console.log((err));
@@ -61,11 +49,12 @@ export default {
             this.modal = !this.modal;
         },
         createProject() {
-          axios.post("http://0.0.0.0:8000/board/",
+          createBoard(
           {
             "name": this.name,
             "author": this.user
-          }, this.options
+          },
+          this.options
           ).then(() => {
                 this.showModal()
                 this.getBoards()
@@ -73,13 +62,6 @@ export default {
                 console.log((err));
             });
         },
-        logout() {
-			localStorage.removeItem("token")
-			localStorage.removeItem("user_id")
-			localStorage.removeItem("username")
-			localStorage.removeItem("board_id")
-			this.$emit("logedOut")
-		},
     },
     created() {
         this.getBoards();

@@ -25,9 +25,16 @@ export default {
     Registration
   },
   methods: {
-    setProject(id) {
-      localStorage.setItem('board_id', id)
-      this.board_id = id
+    setProject(board) {
+      if (board===null) {
+        localStorage.setItem('board_id', board)
+        localStorage.setItem('boardName', board)
+        this.board_id = board
+        return
+      }
+      localStorage.setItem('board_id', board.id)
+      this.board_id = board.id
+      localStorage.setItem('boardName', board.name)
     },
     setToken() {
       console.log('llo')

@@ -14,7 +14,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
 RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev libc-dev libffi-dev
+    && apk add postgresql-dev gcc python3-dev musl-dev libc-dev libffi-dev dos2unix
 
 # install dependencies
 RUN pip install --upgrade pip
@@ -23,8 +23,12 @@ RUN pip install -r requirements.txt
 
 # copy project
 
-COPY ./start /start
+COPY ./start.sh /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
 COPY . .
+
+RUN dos2unix ./start.sh
+
+RUN chmod +x ./start.sh

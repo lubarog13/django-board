@@ -3,10 +3,16 @@
 		<button class="back-btn" @click="$emit('back', null)">Назад</button>
 		<div class="userinfo">
 			<div class="username">
-				Вы вошли как {{ user }}
+				Вы вошли как {{ username }}
 			</div>
 			<button class="back-btn logout-btn" @click="logout">Выйти</button>
 		</div>
+    <div class="heading">
+      <input class="editName" type="text" v-on:keyup.enter="changeName" v-model="newName" placeholder="Название проекта" v-if="editBoard">
+      <h1 v-else>{{boardName}}</h1>
+      <font-awesome-icon icon="fa-solid fa-pencil-square" @click="editBoard=!editBoard"/>
+      <font-awesome-icon icon="fa-solid fa-trash" @click="showModal"/>
+    </div>
 		<div class="row"  v-if="items0">
 			<h3 class="header orange">On Hold ({{items0.length}})</h3>
 			<Container :group-name="'1'" :get-child-payload="getChildPayload0" @drop="onDrop('items0', $event, 'onHold')">
@@ -41,7 +47,7 @@
 		</div>
 		<div class="row" v-if="items2">
 			<h3 class="header yellow">Needs Review ({{items2.length}})</h3>
-			<Container :group-name="'1'" :get-child-payload="getChildPayload2" @drop="onDrop('items2', $event, 'needsReview')"> 
+			<Container :group-name="'1'" :get-child-payload="getChildPayload2" @drop="onDrop('items2', $event, 'needsReview')">
 				<Draggable v-for="item in items2" :key="item.id">
 					<div class="draggable-item">
 						<div class="delete" @click="deleteItem('items2', item, 'needsReview')"></div>
@@ -71,16 +77,24 @@
 			<button class="cancel" @click="hideAddACardTextarea()" v-bind:style="addACardStyle[3]"></button>
 			<button class="add-another-card" @click="showAddACardTextarea(3)" v-bind:style="addAnotherCardStyle[3]">Добавить карточку</button>
 		</div>
+    <Modal v-if="modal" @close="showModal" class="projects_delete projects_create">
+      <h1>Вы действительно хотите удалить  <br/> проект?</h1>
+      <p>Отменить это действие будет невозможно</p>
+      <button type="button" class="add-a-card"  @click="deleteProject">Удалить</button>
+    </Modal>
 	</div>
 </template>
 
 <script>
-import axios from 'axios';
 import { Container, Draggable } from "vue-smooth-dnd";
+import Modal from "@/components/Modal";
 import { applyDrag } from "./utils";
+import { getCards, updateCard, addCard, deleteCard, changeBoard, deleteBoard } from '@/services/api'
+import optionsMixin from '../mixins/optionsMixin'
 export default {
 	name: "KanbanBoard",
-	components: { Container, Draggable },
+	components: { Container, Draggable, Modal },
+	mixins: [optionsMixin],
 	props: ["board"],
 	data: function() {
 		return {
@@ -88,20 +102,18 @@ export default {
 			items1: null,
 			items2: null,
 			items3: null,
-			user: localStorage.getItem("username"),
-			options: {
-				headers: {
-					"Authorization": "Token " + localStorage.getItem('token')
-				}
-			},
 			newCardHeader: '',
-			addACardStyle: [ 
+      editBoard: false,
+      modal: false,
+      boardName: localStorage.getItem("boardName"),
+      newName: localStorage.getItem("boardName"),
+			addACardStyle: [
 					{ display: 'none'},
 					{ display: 'none'},
 					{ display: 'none'},
 					{ display: 'none'}
 				],
-			addAnotherCardStyle: [ 
+			addAnotherCardStyle: [
 					{ display: 'block'},
 					{ display: 'block'},
 					{ display: 'block'},
@@ -111,19 +123,15 @@ export default {
 	},
 	methods: {
 		async loadItems(progress, collection) {
-			return axios.get(`http://0.0.0.0:8000/board/${this.board}/cards/${progress}`, this.options).then(res => {
+			return getCards(this.board, progress, this.options).then(res => {
 				this[collection] = res.data
 			}).catch(err => {
 				console.log(err)
 			})
 		},
-		logout() {
-			localStorage.removeItem("token")
-			localStorage.removeItem("user_id")
-			localStorage.removeItem("username")
-			localStorage.removeItem("board_id")
-			this.$emit("logedOut")
-		},
+    showModal() {
+      this.modal = !this.modal;
+    },
 		setItems() {
 			this.loadItems('onHold', 'items0')
 			this.loadItems('inProgress', 'items1')
@@ -137,22 +145,43 @@ export default {
 			if (dropResult.addedIndex!==null) {
 				dropResult.payload.progress = progress
 				dropResult.payload.order = this[collection].indexOf(dropResult.payload)
-				axios.put(`http://0.0.0.0:8000/cards/${dropResult.payload.id}/`, dropResult.payload, this.options).catch(err => {
+				updateCard(dropResult.payload.id, dropResult.payload, this.options).catch(err => {
 					console.log(err)
 				})
-				return	
+				return
 			}
 			if(dropResult.removedIndex!==null) {
 				this[collection].forEach((element, index) => {
 					if (index>dropResult.removedIndex) {
 						element.order -= 1
-						axios.put(`http://0.0.0.0:8000/cards/${element.id}/`,element, this.options).catch(err => {
+						updateCard(element.id,element, this.options).catch(err => {
 							console.log(err)
-						})	
+						})
 					}
 				});
 			}
 		},
+    changeName() {
+      if (this.newName.length===0){
+        this.editBoard = false
+        return
+      }
+      changeBoard(this.board, {name: this.newName, author: this.user}, this.options).then(() => {
+        this.boardName = this.newName
+        localStorage.setItem("boardName", this.newName)
+      }).catch(err => {
+        console.log(err)
+      }).finally(() => {
+        this.editBoard = false
+      })
+    },
+    deleteProject() {
+      deleteBoard(this.board, this.options).then(() => {
+        this.$emit('back', null)
+      }).catch(err => {
+        console.log(err)
+      })
+    },
 		getChildPayload0: function(index) {
 			return this.items0[index];
 		},
@@ -167,7 +196,7 @@ export default {
 		},
 		addItem: function(collection, progress) {
 			if (this.newCardHeader) {
-				axios.post(`http://0.0.0.0:8000/card/`, {title: this.newCardHeader, progress: progress, board: this.board, order: this[collection].length}, this.options).then(res => {
+				addCard({title: this.newCardHeader, progress: progress, board: this.board, order: this[collection].length}, this.options).then(res => {
 					this[collection].push(res.data)
 				}).catch(err => {
 					console.log(err)
@@ -176,7 +205,7 @@ export default {
 			}
 		},
 		deleteItem: function(collection, item, progress) {
-			axios.delete(`http://0.0.0.0:8000/cards/${item.id}`, this.options).then(() => {
+			deleteCard(item.id, this.options).then(() => {
 					this.loadItems(progress, collection)
 				}).catch(err => {
 					console.log(err)

@@ -11,20 +11,3 @@ export const applyDrag = (arr, dragResult) => {
   }
   return result;
 };
-
-export const loadItems = (collection) => {
-  let result = []
-  if (localStorage.getItem(collection)) {
-    try {
-      result = JSON.parse(localStorage.getItem(collection));
-    } catch(e) {
-      localStorage.removeItem(collection);
-    }
-  }
-  return result;
-};
-
-export const saveItems = (collection, data) => {
-  let parsed = JSON.stringify(data);
-  localStorage.setItem(collection, parsed);
-};

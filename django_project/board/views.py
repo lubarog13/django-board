@@ -73,7 +73,7 @@ class BoardAPIView(APIView):
         board = Board.objects.get(pk=item)
         if not board:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        data = {"id": item, "title": request.data.get('name'), "created": board.created, "author": request.data.get('author')}
+        data = {"id": item, "name": request.data.get('name'), "author": request.data.get('author')}
         serializer = BoardSerializer(instance=board, data=data, many=False)
         if serializer.is_valid():
             serializer.save()

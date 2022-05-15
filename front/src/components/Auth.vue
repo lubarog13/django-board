@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import axios from "axios"
+import {auth, getMe} from '../services/api'
     export default {
         name: "Auth",
         data() {
@@ -33,14 +33,14 @@ import axios from "axios"
         },
         methods: {
             onSubmit() {
-                axios.post(`http://0.0.0.0:8000/api-token-auth/`,{ username: this.form.login, password: this.form.password }).then(res => {
+                auth({ username: this.form.login, password: this.form.password }).then(res => {
 					localStorage.setItem("token", res.data.token)
                     const options = {
                         headers: {
                             "Authorization": "Token " + localStorage.getItem('token')
                         }   
                     }
-                    axios.get(`http://0.0.0.0:8000/users/me/`, options).then(res => {
+                    getMe(options).then(res => {
                         localStorage.setItem("user_id", res.data.id)
                         localStorage.setItem("username", res.data.username)
                         this.$emit('auth')
