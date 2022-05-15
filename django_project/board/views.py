@@ -17,7 +17,16 @@ class CardsAPIView(APIView):
         data = {"id": item, "title": request.data.get('title'), "progress": request.data.get('progress'), "board": request.data.get('board'), "order": request.data.get('order')}
         serializer = CardSerializer(instance=card, data=data, many=False)
         if serializer.is_valid():
-            serializer.save()
+            ord = request.data.get('order')
+            try:
+                    cards = Card.objects.filter(board=request.data.get('board')).filter(progress=request.data.get('progress')).filter(order__gte=ord).order_by('order')
+            except Card.DoesNotExist:
+                    cards = []     
+            if len(cards)>0 and cards[0].order == ord:
+                    for c in cards:
+                        c.order = c.order  + 1
+                        c.save()
+            serializer.save()            
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -26,6 +35,15 @@ class CardsAPIView(APIView):
         if not card:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         card.delete()
+        try:
+            cards = Card.objects.filter(board=card.board).filter(progress=card.progress).filter(order__gt=card.order).order_by('order')
+        except Card.DoesNotExist:
+            cards = []    
+        if len(cards)>0:
+            for c in cards:
+                print(c)
+                c.order = c.order  - 1
+                c.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
