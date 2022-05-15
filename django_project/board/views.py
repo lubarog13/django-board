@@ -10,11 +10,6 @@ from .serializers import CardSerializer, BoardSerializer
 
 class CardsAPIView(APIView):
 
-    def get(self, request, item):
-        cards = Card.objects.filter(board=item)
-        serializer = CardSerializer(cards, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     def put(self, request, item):
         card = Card.objects.get(pk=item)
         if not card:
@@ -33,6 +28,13 @@ class CardsAPIView(APIView):
         card.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class CardsByType(APIView):
+
+    def get(self, request, board,  progress):
+        cards = Card.objects.filter(board=board).filter(progress=progress).order_by('order')
+        serializer = CardSerializer(cards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class CardsCreateAPIView(CreateAPIView):
     serializer_class = CardSerializer
