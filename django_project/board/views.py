@@ -3,9 +3,12 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth.models import User
 
 from .models import Card, Board
-from .serializers import CardSerializer, BoardSerializer
+from .serializers import CardSerializer, BoardSerializer, UserSerializer
+from django.views.generic import TemplateView
+from rest_framework.permissions import AllowAny
 
 
 class CardsAPIView(APIView):
@@ -88,3 +91,18 @@ class BoardAPIView(APIView):
 class BoardCreateAPIView(CreateAPIView):
     serializer_class = BoardSerializer
     queryset = Board.objects.all()
+
+
+class Home(TemplateView):
+    template_name = 'index.html'
+
+class CreateUser(CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+    queryset = User
+
+class UserDetailAPIView(APIView):
+    def get(self, request):
+        user = User.objects.get(pk=request.user.id)
+        serializer= UserSerializer(user, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)

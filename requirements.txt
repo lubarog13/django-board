@@ -1,4 +1,7 @@
 Django>=3.0,<4.0
 psycopg2-binary==2.9.1
+argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
+cffi==1.15.0
 djangorestframework==3.13.1  # https://github.com/encode/django-rest-framework
 django-cors-headers==3.11.0 # https://github.com/adamchainz/django-cors-headers
+django-allauth==0.50.0
