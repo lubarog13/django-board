@@ -39,7 +39,7 @@ export default {
     },
     methods: {
         getBoards() {
-            getBoards(this.user, this.options).then(res => {
+            getBoards(this.options).then(res => {
                 this.boards = res.data;
             }).catch(err => {
                 console.log((err));
@@ -51,8 +51,7 @@ export default {
         createProject() {
           createBoard(
           {
-            "name": this.name,
-            "author": this.user
+            "name": this.name
           },
           this.options
           ).then(() => {

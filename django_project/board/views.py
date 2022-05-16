@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
+from rest_framework.generics import CreateAPIView
 
 from .models import Card, Board
 from .serializers import CardSerializer, BoardSerializer, UserSerializer
@@ -24,12 +24,12 @@ class CardsAPIView(APIView):
             try:
                     cards = Card.objects.filter(board=request.data.get('board')).filter(progress=request.data.get('progress')).filter(order__gte=ord).order_by('order')
             except Card.DoesNotExist:
-                    cards = []     
+                    cards = []
             if len(cards)>0 and cards[0].order == ord:
                     for c in cards:
                         c.order = c.order  + 1
                         c.save()
-            serializer.save()            
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -41,7 +41,7 @@ class CardsAPIView(APIView):
         try:
             cards = Card.objects.filter(board=card.board).filter(progress=card.progress).filter(order__gt=card.order).order_by('order')
         except Card.DoesNotExist:
-            cards = []    
+            cards = []
         if len(cards)>0:
             for c in cards:
                 print(c)
@@ -64,11 +64,6 @@ class CardsCreateAPIView(CreateAPIView):
 
 class BoardAPIView(APIView):
 
-    def get(self, request, item):
-        boards = Board.objects.filter(author=item)
-        serializer = BoardSerializer(boards, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     def put(self, request, item):
         board = Board.objects.get(pk=item)
         if not board:
@@ -87,6 +82,20 @@ class BoardAPIView(APIView):
         board.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class BoardBaseAPIView(APIView):
+    def get(self, request):
+        boards = Board.objects.filter(author=request.user.id)
+        serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        data = {"name": request.data.get('name'), "author": request.user.id}
+        serializer = BoardSerializer(data=data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class BoardCreateAPIView(CreateAPIView):
     serializer_class = BoardSerializer

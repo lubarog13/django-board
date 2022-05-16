@@ -15,12 +15,12 @@ export async function getMe(options) {
     return axios.get(`${baseURL}/users/me/`, options)
 }
 
-export async function getBoards(user, options) {
-    return axios.get(`${baseURL}/boards/${user}/`, options)
+export async function getBoards(options) {
+    return axios.get(`${baseURL}/boards/`, options)
 }
 
 export async function createBoard(data, options) {
-    return axios.post(`${baseURL}/board/`, data, options)
+    return axios.post(`${baseURL}/boards/`, data, options)
 }
 
 export async function getCards(board, progress, options) {
@@ -39,9 +39,9 @@ export async function deleteCard(id, options) {
 }
 
 export async function changeBoard(id, data ,options) {
-    return axios.put(`${baseURL}/boards/${id}/`, data, options)
+    return axios.put(`${baseURL}/board/${id}/`, data, options)
 }
 
 export async function deleteBoard(id, options) {
-    return axios.delete(`${baseURL}/boards/${id}/`, options)
+    return axios.delete(`${baseURL}/board/${id}/`, options)
 }

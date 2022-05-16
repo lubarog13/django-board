@@ -37,7 +37,6 @@ export default {
       localStorage.setItem('boardName', board.name)
     },
     setToken() {
-      console.log('llo')
       let token = localStorage.getItem("token")
       if(token!==null && token!=="null" && token!==undefined) {
         this.token = token

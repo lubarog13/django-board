@@ -16,6 +16,7 @@ export default {
             localStorage.removeItem("user_id")
             localStorage.removeItem("username")
             localStorage.removeItem("board_id")
+            localStorage.setItem('board_id', null)
             this.$emit("logedOut")
         },
     }
