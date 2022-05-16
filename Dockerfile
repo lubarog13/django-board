@@ -21,14 +21,4 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-# copy project
-
-COPY ./start.sh /start
-RUN sed -i 's/\r$//g' /start
-RUN chmod +x /start
-
 COPY . .
-
-RUN dos2unix ./start.sh
-
-RUN chmod +x ./start.sh
