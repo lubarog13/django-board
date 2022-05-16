@@ -432,8 +432,9 @@ button[type=submit] {
 
 .formulate-input-wrapper, .formulate-input-element--submit {
   width: 100%;
-  height: 100%;
+  height: 70px;
 }
+
 .heading {
   color: white;
   opacity: 0.7;
@@ -487,7 +488,7 @@ button[type=submit] {
 }
 
 @media (max-width: 500px) {
-  .userinfo {
+  .kanban-board .userinfo {
     top: 80px;
   }
 }

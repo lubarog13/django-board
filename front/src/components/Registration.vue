@@ -19,7 +19,7 @@
             <p class="error" v-if="error">Ошибка регистрации, проверьте поля</p>
             <div class="form-actions">
             <FormulateInput type="submit" class="login-button" label="Зарегестрироваться"></FormulateInput>
-            <button type="button" class="register-button">Войти</button>
+            <button type="button" class="register-button" @click="$emit('register', null)">Войти</button>
             </div>
         </FormulateForm>
     </div>
